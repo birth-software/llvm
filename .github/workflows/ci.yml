@@ -1,0 +1,94 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    tags:
+      - "**"
+jobs:
+  generate-config:
+    runs-on: ubuntu-latest
+    outputs:
+      BIRTH_GITHUB_TARGETS: ${{ steps.generate-config.outputs.BIRTH_GITHUB_TARGETS }}
+      BIRTH_CMAKE_BUILD_TYPES: ${{ steps.generate-config.outputs.BIRTH_CMAKE_BUILD_TYPES }}
+      BIRTH_MACOS_AARCH64: ${{ steps.generate-config.outputs.BIRTH_MACOS_AARCH64 }}
+      BIRTH_LINUX_AARCH64: ${{ steps.generate-config.outputs.BIRTH_LINUX_AARCH64 }}
+      BIRTH_LINUX_X86_64: ${{ steps.generate-config.outputs.BIRTH_LINUX_X86_64 }}
+      BIRTH_WINDOWS_X86_64: ${{ steps.generate-config.outputs.BIRTH_WINDOWS_X86_64 }}
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+      - name: Generate config
+        id: generate-config
+        uses: birth-software/github-config@v7
+  build_llvm:
+    needs: generate-config
+    permissions: write-all
+    strategy:
+      fail-fast: false
+      matrix:
+        os: ${{ fromJSON(needs.generate-config.outputs.BIRTH_GITHUB_TARGETS) }}
+        CMAKE_BUILD_TYPE: ${{ fromJSON(needs.generate-config.outputs.BIRTH_CMAKE_BUILD_TYPES) }}
+    runs-on: ${{ matrix.os }}
+    env:
+      BIRTH_MACOS_AARCH64: ${{ needs.generate-config.outputs.BIRTH_MACOS_AARCH64 }}
+      BIRTH_LINUX_AARCH64: ${{ needs.generate-config.outputs.BIRTH_LINUX_AARCH64 }}
+      BIRTH_LINUX_X86_64: ${{ needs.generate-config.outputs.BIRTH_LINUX_X86_64 }}
+      BIRTH_WINDOWS_X86_64: ${{ needs.generate-config.outputs.BIRTH_WINDOWS_X86_64 }}
+      CMAKE_STATIC_LIBRARY_PREFIX: lib
+      CMAKE_STATIC_LIBRARY_SUFFIX: .a
+    steps:
+      - name: Maximize build space
+        if: matrix.os == env.BIRTH_LINUX_X86_64 || matrix.os == env.BIRTH_LINUX_AARCH64
+        uses: AdityaGarg8/remove-unwanted-software@v5
+        with:
+          remove-android: 'true'
+          remove-dotnet: 'true'
+          remove-haskell: 'true'
+          remove-codeql: 'true'
+          remove-docker-images: 'true'
+          remove-large-packages: 'true'
+          remove-cached-tools: 'true'
+          remove-swapfile: 'true'
+      - uses: actions/checkout@v4
+      - uses: birth-software/github-setup@v6
+      - name: Build
+        shell: bash
+        env:
+          CMAKE_BUILD_TYPE: ${{ matrix.CMAKE_BUILD_TYPE }}
+          BIRTH_ENABLE_CLANG: false
+          LLVM_VERSION: 20.1.2
+        run: ./build.sh
+      - name: Upload LLVM artifact (7z)
+        uses: actions/upload-artifact@v4
+        with:
+          # Name of the artifact to upload.
+          # Optional. Default is 'artifact'
+          name: ${{env.LLVM_BASENAME}}.7z
+          # A file, directory or wildcard pattern that describes what to upload
+          # Required.
+          path: ${{env.LLVM_ASSET_BASE_PATH}}.7z
+          compression-level: 9
+          overwrite: true
+          if-no-files-found: 'error'
+      - name: Upload LLVM artifact (b2sum)
+        uses: actions/upload-artifact@v4
+        with:
+          # Name of the artifact to upload.
+          # Optional. Default is 'artifact'
+          name: ${{env.LLVM_BASENAME}}.7z.b2sum
+          # A file, directory or wildcard pattern that describes what to upload
+          # Required.
+          path: ${{env.LLVM_ASSET_BASE_PATH}}.7z.b2sum
+          compression-level: 9
+          overwrite: true
+          if-no-files-found: 'error'
+      - name: Release
+        uses: softprops/action-gh-release@v2
+        if: startsWith(github.ref, 'refs/tags/')
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          files: |
+            ${{env.LLVM_BASENAME}}.7z
+            ${{env.LLVM_BASENAME}}.7z.b2sum

@@ -1,0 +1,10 @@
+/out/
+/out-win/
+/out-win-x86/
+/llvm-*/
+/lld-*/
+/clang-*/
+/install/
+/source/
+/build/
+/llvm_*
