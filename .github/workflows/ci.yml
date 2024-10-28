@@ -1,0 +1,78 @@
+name: GitHub CI
+
+on:
+  push:
+    tags:
+      - '**'
+    branches:
+      - main
+  pull_request:
+
+jobs:
+    linux:
+        name: Linux Build
+        runs-on: ubuntu-24.04
+        permissions: write-all
+        strategy:
+            fail-fast: false
+            matrix:
+                CMAKE_BUILD_TYPE:
+                -   Debug
+                -   MinSizeRel
+                -   RelWithDebInfo
+                -   Release
+        steps:
+        - name: Maximize build space
+          uses: AdityaGarg8/remove-unwanted-software@v4.1
+          with:
+            remove-android: 'true'
+            remove-dotnet: 'true'
+            remove-haskell: 'true'
+            remove-codeql: 'true'
+            remove-docker-images: 'true'
+            remove-cached-tools: 'true'
+        - name: Checkout repo
+          uses: actions/checkout@v4
+        - name: Install dependencies
+          run: sudo apt install -y ninja-build
+        - name: Build LLVM
+          run: ./build
+          env:
+            CMAKE_BUILD_TYPE: ${{matrix.CMAKE_BUILD_TYPE}}
+            LLVM_RELEASE_BASENAME: llvm-${{env.LLVM_VERSION}}-x86_64-linux-${{matrix.CMAKE_BUILD_TYPE}}
+        - name: Release
+          uses: softprops/action-gh-release@v2
+          if: startsWith(github.ref, 'refs/tags/')
+          env:
+            GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          with:
+            files: ${{steps.BUILD.outputs.DEPLOY_FILE}}
+    macos:
+        name: MacOS Build
+        runs-on: macos-15
+        permissions: write-all
+        strategy:
+            fail-fast: false
+            matrix:
+                CMAKE_BUILD_TYPE:
+                -   Debug
+                -   MinSizeRel
+                -   RelWithDebInfo
+                -   Release
+        steps:
+        - name: Checkout repo
+          uses: actions/checkout@v4
+        - name: Install dependencies
+          run: brew install ninja
+        - name: Build LLVM
+          run: ./build
+          env:
+            CMAKE_BUILD_TYPE: ${{matrix.CMAKE_BUILD_TYPE}}
+            LLVM_RELEASE_BASENAME: llvm-${{env.LLVM_VERSION}}-aarch64-macos-${{matrix.CMAKE_BUILD_TYPE}}
+        - name: Release
+          uses: softprops/action-gh-release@v2
+          if: startsWith(github.ref, 'refs/tags/')
+          env:
+            GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          with:
+            files: ${{steps.BUILD.outputs.DEPLOY_FILE}}
