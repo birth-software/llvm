@@ -8,6 +8,9 @@ on:
       - main
   pull_request:
 
+env:
+  LLVM_VERSION: 19.1.0
+
 jobs:
     linux:
         name: Linux Build
