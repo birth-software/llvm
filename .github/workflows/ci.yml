@@ -33,11 +33,13 @@ jobs:
             remove-haskell: 'true'
             remove-codeql: 'true'
             remove-docker-images: 'true'
+            remove-large-packages: 'true'
             remove-cached-tools: 'true'
+            remove-swapfile: 'true'
         - name: Checkout repo
           uses: actions/checkout@v4
         - name: Install dependencies
-          run: sudo apt install -y ninja-build
+          run: sudo apt install -y ninja-build clang
         - name: Build LLVM
           run: ./build
           env:
