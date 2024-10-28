@@ -1,5 +1,4 @@
 #!/bin/sh
-# This file is licensed under the public domain.
 
 set -eu
 
@@ -7,38 +6,35 @@ ROOTDIR="$(pwd)"
 export CC=clang
 export CXX=clang++
 
-# First cross compile zlib for the target, as we need the LLVM linked into
-# the final zig binary to have zlib support enabled.
+MY_INSTALL_DIR="$ROOTDIR/out/$LLVM_RELEASE_BASENAME"
+mkdir -p $MY_INSTALL_DIR
+
 mkdir -p "$ROOTDIR/out/build-zlib-host"
 cd "$ROOTDIR/out/build-zlib-host"
 cmake "$ROOTDIR/zlib" \
     -G Ninja \
-    -DCMAKE_INSTALL_PREFIX="$ROOTDIR/out/host" \
-    -DCMAKE_PREFIX_PATH="$ROOTDIR/out/host" \
+    -DCMAKE_INSTALL_PREFIX="$MY_INSTALL_DIR" \
+    -DCMAKE_PREFIX_PATH="$MY_INSTALL_DIR" \
     -DCMAKE_BUILD_TYPE=Release
 cmake --build . --target install
 
-# Same deal for zstd.
-# The build system for zstd is whack so I just put all the files here.
-# mkdir -p "$ROOTDIR/out/$TARGET-$MCPU/lib"
-# cp "$ROOTDIR/zstd/lib/zstd.h" "$ROOTDIR/out/$TARGET-$MCPU/include/zstd.h"
 mkdir -p "$ROOTDIR/out/build-zstd-host"
 cd "$ROOTDIR/out/build-zstd-host"
 cmake "$ROOTDIR/zstd" \
     -G Ninja \
-    -DCMAKE_INSTALL_PREFIX="$ROOTDIR/out/host" \
-    -DCMAKE_PREFIX_PATH="$ROOTDIR/out/host" \
+    -DCMAKE_INSTALL_PREFIX="$MY_INSTALL_DIR" \
+    -DCMAKE_PREFIX_PATH="$MY_INSTALL_DIR" \
     -DCMAKE_BUILD_TYPE=Release
 cmake --build . --target install
 
-# First build the libraries for Zig to link against, as well as native `llvm-tblgen`.
 mkdir -p "$ROOTDIR/out/build-llvm-host"
 cd "$ROOTDIR/out/build-llvm-host"
 cmake "$ROOTDIR/llvm" \
     -G Ninja \
-    -DCMAKE_INSTALL_PREFIX="$ROOTDIR/out/host" \
-    -DCMAKE_PREFIX_PATH="$ROOTDIR/out/host" \
+    -DCMAKE_INSTALL_PREFIX="$MY_INSTALL_DIR" \
+    -DCMAKE_PREFIX_PATH="$MY_INSTALL_DIR" \
     -DCMAKE_BUILD_TYPE="$CMAKE_BUILD_TYPE" \
+    -DLLVM_PARALLEL_LINK_JOBS=1 \
     -DLLVM_ENABLE_BINDINGS=OFF \
     -DLLVM_ENABLE_LIBEDIT=OFF \
     -DLLVM_ENABLE_LIBPFM=OFF \
@@ -68,3 +64,8 @@ cmake "$ROOTDIR/llvm" \
     -DCLANG_TOOL_C_ARCMT_TEST_BUILD=OFF \
     -DCLANG_TOOL_LIBCLANG_BUILD=OFF
 cmake --build . --target install
+
+DEPLOY_FILE="$LLVM_RELEASE_BASENAME.7z"
+7z a -t7z -m0=lzma2 -mx=9 -mfb=64 -md=32m -ms=on $DEPLOY_FILE $MY_INSTALL_DIR
+
+echo "DEPLOY_FILE=$DEPLOY_FILE" >> $GITHUB_OUTPUT
