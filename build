@@ -64,6 +64,8 @@ cmake "$ROOTDIR/llvm" \
     -DCLANG_TOOL_LIBCLANG_BUILD=OFF
 cmake --build . --target install
 
+cd $ROOTDIR
+
 rm -rf "$ROOTDIR/out/build-zlib-host"
 rm -rf "$ROOTDIR/out/build-zstd-host"
 rm -rf "$ROOTDIR/out/build-llvm-host"
