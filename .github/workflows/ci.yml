@@ -41,6 +41,7 @@ jobs:
         - name: Install dependencies
           run: sudo apt install -y ninja-build clang
         - name: Build LLVM
+          id: BUILD
           run: ./build
           env:
             CMAKE_BUILD_TYPE: ${{matrix.CMAKE_BUILD_TYPE}}
@@ -70,6 +71,7 @@ jobs:
         - name: Install dependencies
           run: brew install ninja
         - name: Build LLVM
+          id: BUILD
           run: ./build
           env:
             CMAKE_BUILD_TYPE: ${{matrix.CMAKE_BUILD_TYPE}}
