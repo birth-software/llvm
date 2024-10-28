@@ -1,6 +1,6 @@
 #!/bin/sh
 
-set -eu
+set -eux
 
 ROOTDIR="$(pwd)"
 export CC=clang
@@ -54,7 +54,6 @@ cmake "$ROOTDIR/llvm" \
     -DLLVM_TOOL_LLVM_LTO_BUILD=OFF \
     -DLLVM_TOOL_LTO_BUILD=OFF \
     -DLLVM_TOOL_REMARKS_SHLIB_BUILD=OFF \
-    -DCLANG_BUILD_TOOLS=OFF \
     -DCLANG_INCLUDE_DOCS=OFF \
     -DCLANG_INCLUDE_TESTS=OFF \
     -DCLANG_TOOL_CLANG_IMPORT_TEST_BUILD=OFF \
@@ -64,6 +63,10 @@ cmake "$ROOTDIR/llvm" \
     -DCLANG_TOOL_C_ARCMT_TEST_BUILD=OFF \
     -DCLANG_TOOL_LIBCLANG_BUILD=OFF
 cmake --build . --target install
+
+rm -rf "$ROOTDIR/out/build-zlib-host"
+rm -rf "$ROOTDIR/out/build-zstd-host"
+rm -rf "$ROOTDIR/out/build-llvm-host"
 
 DEPLOY_FILE="$LLVM_RELEASE_BASENAME.7z"
 7z a -t7z -m0=lzma2 -mx=9 -mfb=64 -md=32m -ms=on $DEPLOY_FILE $MY_INSTALL_DIR
