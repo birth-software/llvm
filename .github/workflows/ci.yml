@@ -82,4 +82,9 @@ jobs:
           env:
             GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           with:
-            files: ${{steps.BUILD.outputs.DEPLOY_FILE}}
+            files: |
+              ${{steps.BUILD.outputs.DEPLOY_FILE}}00
+              ${{steps.BUILD.outputs.DEPLOY_FILE}}01
+              ${{steps.BUILD.outputs.DEPLOY_FILE}}02
+              ${{steps.BUILD.outputs.DEPLOY_FILE}}03
+              ${{steps.BUILD.outputs.DEPLOY_FILE}}04

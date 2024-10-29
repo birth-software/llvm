@@ -139,5 +139,7 @@ rm -rf "$ROOTDIR/out/build-llvm-host"
 
 DEPLOY_FILE="$ROOTDIR/out/$LLVM_RELEASE_BASENAME.7z"
 7z a -t7z -m0=lzma2 -mx=9 -mfb=64 -md=32m -ms=on $DEPLOY_FILE $MY_INSTALL_DIR
+rm -rf $MY_INSTALL_DIR
+split -n 5 -d $DEPLOY_FILE $DEPLOY_FILE
 
 echo "DEPLOY_FILE=$DEPLOY_FILE" >> $GITHUB_OUTPUT
