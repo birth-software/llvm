@@ -25,17 +25,18 @@ jobs:
                 -   RelWithDebInfo
                 -   Release
         steps:
-        - name: Maximize build space
-          uses: AdityaGarg8/remove-unwanted-software@v4.1
+        - name: Free Disk Space (Ubuntu)
+          uses: insightsengineering/disk-space-reclaimer@v1
           with:
-            remove-android: 'true'
-            remove-dotnet: 'true'
-            remove-haskell: 'true'
-            remove-codeql: 'true'
-            remove-docker-images: 'true'
-            remove-large-packages: 'true'
-            remove-cached-tools: 'true'
-            remove-swapfile: 'true'
+            # all of these default to true, but feel free to set to
+            # "false" if necessary for your workflow
+            android: true
+            dotnet: true
+            haskell: true
+            large-packages: true
+            swap-storage: true
+            docker-images: true
+            tools-cache: true
         - name: Checkout repo
           uses: actions/checkout@v4
         - name: Install dependencies
