@@ -10,20 +10,24 @@ on:
 
 env:
   LLVM_VERSION: 19.1.0
+  LINUX_IMAGE: "ubuntu-24.04"
+  MACOS_IMAGE: "macos-15"
+  WINDOWS_IMAGE: "windows-2022"
 
 jobs:
-    linux:
-        name: Linux Build
-        runs-on: ubuntu-24.04
+    build_llvm:
+        name: Build LLVM
+        runs-on: ${{matrix.os }}
         permissions: write-all
         strategy:
-            fail-fast: false
-            matrix:
-                CMAKE_BUILD_TYPE:
-                -   Debug
-                -   MinSizeRel
-                -   RelWithDebInfo
-                -   Release
+          fail-fast: false
+          matrix:
+            os: [ubuntu-24.04, macos-15]
+            CMAKE_BUILD_TYPE:
+              -   Debug
+              -   MinSizeRel
+              -   RelWithDebInfo
+              -   Release
         steps:
         - name: Maximize build space
           uses: AdityaGarg8/remove-unwanted-software@v4.1
@@ -36,62 +40,20 @@ jobs:
             remove-large-packages: 'true'
             remove-cached-tools: 'true'
             remove-swapfile: 'true'
+          if: matrix.os == env.LINUX_IMAGE
         - name: Checkout repo
           uses: actions/checkout@v4
         - name: Install dependencies
           run: sudo apt install -y ninja-build clang
-        - name: Build LLVM
-          id: BUILD
-          run: ./build
-          env:
-            CMAKE_BUILD_TYPE: ${{matrix.CMAKE_BUILD_TYPE}}
-            LLVM_RELEASE_BASENAME: llvm-${{env.LLVM_VERSION}}-x86_64-linux-${{matrix.CMAKE_BUILD_TYPE}}
-        - name: Release
-          uses: softprops/action-gh-release@v2
-          if: startsWith(github.ref, 'refs/tags/')
-          env:
-            GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          with:
-            files: |
-              ${{steps.BUILD.outputs.DEPLOY_FILE}}00
-              ${{steps.BUILD.outputs.DEPLOY_FILE}}01
-              ${{steps.BUILD.outputs.DEPLOY_FILE}}02
-              ${{steps.BUILD.outputs.DEPLOY_FILE}}03
-              ${{steps.BUILD.outputs.DEPLOY_FILE}}04
-              ${{steps.BUILD.outputs.DEPLOY_FILE}}.b2sum
-    macos:
-        name: MacOS Build
-        runs-on: macos-15
-        permissions: write-all
-        strategy:
-            fail-fast: false
-            matrix:
-                CMAKE_BUILD_TYPE:
-                -   Debug
-                -   MinSizeRel
-                -   RelWithDebInfo
-                -   Release
-        steps:
-        - name: Checkout repo
-          uses: actions/checkout@v4
+          if: matrix.os == env.LINUX_IMAGE
         - name: Install dependencies
           run: brew install ninja coreutils
+          if: matrix.os == env.MACOS_IMAGE
         - name: Build LLVM
           id: BUILD
           run: ./build
           env:
             CMAKE_BUILD_TYPE: ${{matrix.CMAKE_BUILD_TYPE}}
-            LLVM_RELEASE_BASENAME: llvm-${{env.LLVM_VERSION}}-aarch64-macos-${{matrix.CMAKE_BUILD_TYPE}}
-        - name: Release
-          uses: softprops/action-gh-release@v2
-          if: startsWith(github.ref, 'refs/tags/')
-          env:
-            GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          with:
-            files: |
-              ${{steps.BUILD.outputs.DEPLOY_FILE}}00
-              ${{steps.BUILD.outputs.DEPLOY_FILE}}01
-              ${{steps.BUILD.outputs.DEPLOY_FILE}}02
-              ${{steps.BUILD.outputs.DEPLOY_FILE}}03
-              ${{steps.BUILD.outputs.DEPLOY_FILE}}04
-              ${{steps.BUILD.outputs.DEPLOY_FILE}}.b2sum
+            LLVM_RELEASE_BASENAME: llvm-${{env.LLVM_VERSION}}-${{matrix.os}}-${{matrix.CMAKE_BUILD_TYPE}}
+        - name: Disk space
+          run: df -h
