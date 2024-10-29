@@ -52,7 +52,13 @@ jobs:
           env:
             GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           with:
-            files: ${{steps.BUILD.outputs.DEPLOY_FILE}}
+            files: |
+              ${{steps.BUILD.outputs.DEPLOY_FILE}}00
+              ${{steps.BUILD.outputs.DEPLOY_FILE}}01
+              ${{steps.BUILD.outputs.DEPLOY_FILE}}02
+              ${{steps.BUILD.outputs.DEPLOY_FILE}}03
+              ${{steps.BUILD.outputs.DEPLOY_FILE}}04
+              ${{steps.BUILD.outputs.DEPLOY_FILE}}.b2sum
     macos:
         name: MacOS Build
         runs-on: macos-15
@@ -69,7 +75,7 @@ jobs:
         - name: Checkout repo
           uses: actions/checkout@v4
         - name: Install dependencies
-          run: brew install ninja
+          run: brew install ninja coreutils
         - name: Build LLVM
           id: BUILD
           run: ./build
@@ -88,3 +94,4 @@ jobs:
               ${{steps.BUILD.outputs.DEPLOY_FILE}}02
               ${{steps.BUILD.outputs.DEPLOY_FILE}}03
               ${{steps.BUILD.outputs.DEPLOY_FILE}}04
+              ${{steps.BUILD.outputs.DEPLOY_FILE}}.b2sum

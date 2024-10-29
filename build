@@ -66,6 +66,8 @@ cmake --build . --target install
 
 cd $ROOTDIR
 
+ls -lasR $MY_INSTALL_DIR
+
 if [[ "$OSTYPE" == "linux"* ]]; then
     rm $MY_INSTALL_DIR/bin/bugpoint
     rm $MY_INSTALL_DIR/bin/bugpoint
@@ -137,9 +139,14 @@ rm -rf "$ROOTDIR/out/build-zlib-host"
 rm -rf "$ROOTDIR/out/build-zstd-host"
 rm -rf "$ROOTDIR/out/build-llvm-host"
 
-DEPLOY_FILE="$ROOTDIR/out/$LLVM_RELEASE_BASENAME.7z"
-7z a -t7z -m0=lzma2 -mx=9 -mfb=64 -md=32m -ms=on $DEPLOY_FILE $MY_INSTALL_DIR
+DEPLOY_FILENAME="$LLVM_RELEASE_BASENAME.7z"
+DEPLOY_FILE_PATH="$ROOTDIR/out/$DEPLOY_FILENAME"
+7z a -t7z -m0=lzma2 -mx=9 -mfb=64 -md=32m -ms=on $DEPLOY_FILE_PATH $MY_INSTALL_DIR
 rm -rf $MY_INSTALL_DIR
-split -n 5 -d $DEPLOY_FILE $DEPLOY_FILE
+cd $ROOTDIR/out
+b2sum $DEPLOY_FILENAME > "$DEPLOY_FILENAME.b2sum"
+cat "$DEPLOY_FILENAME.b2sum"
+cd $ROOTDIR
+split -n 5 -d $DEPLOY_FILE_PATH $DEPLOY_FILE_PATH
 
-echo "DEPLOY_FILE=$DEPLOY_FILE" >> $GITHUB_OUTPUT
+echo "DEPLOY_FILE=$DEPLOY_FILE_PATH" >> $GITHUB_OUTPUT
