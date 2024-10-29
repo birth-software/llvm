@@ -95,3 +95,40 @@ jobs:
               ${{steps.BUILD.outputs.DEPLOY_FILE}}03
               ${{steps.BUILD.outputs.DEPLOY_FILE}}04
               ${{steps.BUILD.outputs.DEPLOY_FILE}}.b2sum
+    windows:
+        name: Windows Build
+        runs-on: windows-2022
+        permissions: write-all
+        strategy:
+            fail-fast: false
+            matrix:
+                CMAKE_BUILD_TYPE:
+                -   Debug
+                -   MinSizeRel
+                -   RelWithDebInfo
+                -   Release
+        steps:
+        - name: Checkout repo
+          uses: actions/checkout@v4
+        - name: Install dependencies
+          run: choco install -y ninja gnuwin32-coreutils.install
+        - name: Build LLVM
+          id: BUILD
+          run: ./build
+          shell: bash
+          env:
+            CMAKE_BUILD_TYPE: ${{matrix.CMAKE_BUILD_TYPE}}
+            LLVM_RELEASE_BASENAME: llvm-${{env.LLVM_VERSION}}-x86_64-windows-${{matrix.CMAKE_BUILD_TYPE}}
+        - name: Release
+          uses: softprops/action-gh-release@v2
+          if: startsWith(github.ref, 'refs/tags/')
+          env:
+            GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          with:
+            files: |
+              ${{steps.BUILD.outputs.DEPLOY_FILE}}00
+              ${{steps.BUILD.outputs.DEPLOY_FILE}}01
+              ${{steps.BUILD.outputs.DEPLOY_FILE}}02
+              ${{steps.BUILD.outputs.DEPLOY_FILE}}03
+              ${{steps.BUILD.outputs.DEPLOY_FILE}}04
+              ${{steps.BUILD.outputs.DEPLOY_FILE}}.b2sum

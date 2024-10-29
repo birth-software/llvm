@@ -2,6 +2,8 @@
 
 set -eux
 
+echo $OSTYPE
+
 ROOTDIR="$(pwd)"
 export CC=clang
 export CXX=clang++
@@ -27,10 +29,16 @@ cmake "$ROOTDIR/zstd" \
     -DCMAKE_BUILD_TYPE=Release
 cmake --build . --target install
 
+case "$OSTYPE" in
+    msys*) EXTRA_HOST_TRIPLE_ARG="-DLLVM_HOST_TRIPLE=x86_64" ;;
+    *) EXTRA_HOST_TRIPLE_ARG="" ;;
+esac
+
 mkdir -p "$ROOTDIR/out/build-llvm-host"
 cd "$ROOTDIR/out/build-llvm-host"
 cmake "$ROOTDIR/llvm" \
     -G Ninja \
+    $EXTRA_HOST_TRIPLE_ARG \
     -DCMAKE_INSTALL_PREFIX="$MY_INSTALL_DIR" \
     -DCMAKE_PREFIX_PATH="$MY_INSTALL_DIR" \
     -DCMAKE_BUILD_TYPE="$CMAKE_BUILD_TYPE" \
