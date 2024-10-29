@@ -68,72 +68,73 @@ cd $ROOTDIR
 
 ls -lasR $MY_INSTALL_DIR
 
-if [[ "$OSTYPE" == "linux"* ]]; then
-    rm $MY_INSTALL_DIR/bin/bugpoint
-    rm $MY_INSTALL_DIR/bin/bugpoint
-    rm $MY_INSTALL_DIR/bin/analyze-build
-    rm $MY_INSTALL_DIR/bin/bugpoint
-    rm $MY_INSTALL_DIR/bin/hmaptool
-    rm $MY_INSTALL_DIR/bin/intercept-build
-    rm $MY_INSTALL_DIR/bin/lli
-    rm $MY_INSTALL_DIR/bin/llvm-addr2line
-    rm $MY_INSTALL_DIR/bin/llvm-bcanalyzer
-    rm $MY_INSTALL_DIR/bin/llvm-bitcode-strip
-    rm $MY_INSTALL_DIR/bin/llvm-cat
-    rm $MY_INSTALL_DIR/bin/llvm-cfi-verify
-    rm $MY_INSTALL_DIR/bin/llvm-cov
-    rm $MY_INSTALL_DIR/bin/llvm-c-test
-    rm $MY_INSTALL_DIR/bin/llvm-cvtres
-    rm $MY_INSTALL_DIR/bin/llvm-cxxdump
-    rm $MY_INSTALL_DIR/bin/llvm-cxxfilt
-    rm $MY_INSTALL_DIR/bin/llvm-cxxmap
-    rm $MY_INSTALL_DIR/bin/llvm-debuginfod-find
-    rm $MY_INSTALL_DIR/bin/llvm-diff
-    rm $MY_INSTALL_DIR/bin/llvm-dis
-    rm $MY_INSTALL_DIR/bin/llvm-dlltool
-    rm $MY_INSTALL_DIR/bin/llvm-dwarfdump
-    rm $MY_INSTALL_DIR/bin/llvm-dwarfutil
-    rm $MY_INSTALL_DIR/bin/llvm-extract
-    rm $MY_INSTALL_DIR/bin/llvm-ifs
-    rm $MY_INSTALL_DIR/bin/llvm-install-name-tool
-    rm $MY_INSTALL_DIR/bin/llvm-lib
-    rm $MY_INSTALL_DIR/bin/llvm-link
-    rm $MY_INSTALL_DIR/bin/llvm-lipo
-    rm $MY_INSTALL_DIR/bin/llvm-mc
-    rm $MY_INSTALL_DIR/bin/llvm-mca
-    rm $MY_INSTALL_DIR/bin/llvm-ml
-    rm $MY_INSTALL_DIR/bin/llvm-modextract
-    rm $MY_INSTALL_DIR/bin/llvm-mt
-    rm $MY_INSTALL_DIR/bin/llvm-nm
-    rm $MY_INSTALL_DIR/bin/llvm-objcopy
-    rm $MY_INSTALL_DIR/bin/llvm-objdump
-    rm $MY_INSTALL_DIR/bin/llvm-opt-report
-    rm $MY_INSTALL_DIR/bin/llvm-otool
-    rm $MY_INSTALL_DIR/bin/llvm-pdbutil
-    rm $MY_INSTALL_DIR/bin/llvm-profdata
-    rm $MY_INSTALL_DIR/bin/llvm-profgen
-    rm $MY_INSTALL_DIR/bin/llvm-rc
-    rm $MY_INSTALL_DIR/bin/llvm-readelf
-    rm $MY_INSTALL_DIR/bin/llvm-readobj
-    rm $MY_INSTALL_DIR/bin/llvm-rtdyld
-    rm $MY_INSTALL_DIR/bin/llvm-sim
-    rm $MY_INSTALL_DIR/bin/llvm-size
-    rm $MY_INSTALL_DIR/bin/llvm-split
-    rm $MY_INSTALL_DIR/bin/llvm-stress
-    rm $MY_INSTALL_DIR/bin/llvm-strings
-    rm $MY_INSTALL_DIR/bin/llvm-strip
-    rm $MY_INSTALL_DIR/bin/llvm-symbolizer
-    rm $MY_INSTALL_DIR/bin/llvm-tblgen
-    rm $MY_INSTALL_DIR/bin/llvm-tli-checker
-    rm $MY_INSTALL_DIR/bin/llvm-undname
-    rm $MY_INSTALL_DIR/bin/llvm-windres
-    rm $MY_INSTALL_DIR/bin/llvm-xray
-    rm $MY_INSTALL_DIR/bin/opt
-    rm $MY_INSTALL_DIR/bin/sanstats
-    rm $MY_INSTALL_DIR/bin/scan-build
-    rm $MY_INSTALL_DIR/bin/scan-build-py
-    rm $MY_INSTALL_DIR/bin/verify-uselistorder
-fi
+rm $MY_INSTALL_DIR/analyze-build
+rm $MY_INSTALL_DIR/bugpoint
+rm $MY_INSTALL_DIR/clang-check
+rm $MY_INSTALL_DIR/clang-extdef-mapping
+rm $MY_INSTALL_DIR/clang-offload-bundler
+rm $MY_INSTALL_DIR/clang-offload-packager
+rm $MY_INSTALL_DIR/clang-refactor
+rm $MY_INSTALL_DIR/clang-rename
+rm $MY_INSTALL_DIR/clang-repl
+rm $MY_INSTALL_DIR/clang-tblgen
+rm $MY_INSTALL_DIR/diagtool
+rm $MY_INSTALL_DIR/hmaptool
+rm $MY_INSTALL_DIR/intercept-build
+rm $MY_INSTALL_DIR/llvm-bcanalyzer
+rm $MY_INSTALL_DIR/llvm-bitcode-strip -> llvm-objcopy
+rm $MY_INSTALL_DIR/llvm-c-test
+rm $MY_INSTALL_DIR/llvm-cat
+rm $MY_INSTALL_DIR/llvm-cfi-verify
+rm $MY_INSTALL_DIR/llvm-cov
+rm $MY_INSTALL_DIR/llvm-cvtres
+rm $MY_INSTALL_DIR/llvm-cxxdump
+rm $MY_INSTALL_DIR/llvm-cxxfilt
+rm $MY_INSTALL_DIR/llvm-cxxmap
+rm $MY_INSTALL_DIR/llvm-debuginfod-find
+rm $MY_INSTALL_DIR/llvm-diff
+rm $MY_INSTALL_DIR/llvm-dis
+rm $MY_INSTALL_DIR/llvm-dwarfdump
+rm $MY_INSTALL_DIR/llvm-dwarfutil
+rm $MY_INSTALL_DIR/llvm-extract
+rm $MY_INSTALL_DIR/llvm-ifs
+rm $MY_INSTALL_DIR/llvm-install-name-tool -> llvm-objcopy
+rm $MY_INSTALL_DIR/llvm-link
+rm $MY_INSTALL_DIR/llvm-lipo
+rm $MY_INSTALL_DIR/llvm-mc
+rm $MY_INSTALL_DIR/llvm-mca
+rm $MY_INSTALL_DIR/llvm-ml
+rm $MY_INSTALL_DIR/llvm-modextract
+rm $MY_INSTALL_DIR/llvm-mt
+rm $MY_INSTALL_DIR/llvm-nm
+rm $MY_INSTALL_DIR/llvm-objcopy
+rm $MY_INSTALL_DIR/llvm-objdump
+rm $MY_INSTALL_DIR/llvm-opt-report
+rm $MY_INSTALL_DIR/llvm-otool -> llvm-objdump
+rm $MY_INSTALL_DIR/llvm-pdbutil
+rm $MY_INSTALL_DIR/llvm-profdata
+rm $MY_INSTALL_DIR/llvm-profgen
+rm $MY_INSTALL_DIR/llvm-readelf -> llvm-readobj
+rm $MY_INSTALL_DIR/llvm-readobj
+rm $MY_INSTALL_DIR/llvm-rtdyld
+rm $MY_INSTALL_DIR/llvm-sim
+rm $MY_INSTALL_DIR/llvm-size
+rm $MY_INSTALL_DIR/llvm-split
+rm $MY_INSTALL_DIR/llvm-stress
+rm $MY_INSTALL_DIR/llvm-strings
+rm $MY_INSTALL_DIR/llvm-strip -> llvm-objcopy
+rm $MY_INSTALL_DIR/llvm-symbolizer
+rm $MY_INSTALL_DIR/llvm-tblgen
+rm $MY_INSTALL_DIR/llvm-tli-checker
+rm $MY_INSTALL_DIR/llvm-undname
+rm $MY_INSTALL_DIR/llvm-xray
+rm $MY_INSTALL_DIR/nvptx-arch
+rm $MY_INSTALL_DIR/opt
+rm $MY_INSTALL_DIR/sanstats
+rm $MY_INSTALL_DIR/scan-build
+rm $MY_INSTALL_DIR/scan-build-py
+rm $MY_INSTALL_DIR/set-xcode-analyzer
+rm $MY_INSTALL_DIR/verify-uselistorder
 
 rm -rf "$ROOTDIR/out/build-zlib-host"
 rm -rf "$ROOTDIR/out/build-zstd-host"
