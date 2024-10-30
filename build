@@ -77,7 +77,6 @@ rm $MY_INSTALL_DIR/bin/clang-offload-packager
 rm $MY_INSTALL_DIR/bin/clang-refactor
 rm $MY_INSTALL_DIR/bin/clang-rename
 rm $MY_INSTALL_DIR/bin/clang-repl
-rm $MY_INSTALL_DIR/bin/clang-tblgen
 rm $MY_INSTALL_DIR/bin/diagtool
 rm $MY_INSTALL_DIR/bin/hmaptool
 rm $MY_INSTALL_DIR/bin/intercept-build
@@ -126,7 +125,6 @@ rm $MY_INSTALL_DIR/bin/llvm-stress
 rm $MY_INSTALL_DIR/bin/llvm-strings
 rm $MY_INSTALL_DIR/bin/llvm-strip
 rm $MY_INSTALL_DIR/bin/llvm-symbolizer
-rm $MY_INSTALL_DIR/bin/llvm-tblgen
 rm $MY_INSTALL_DIR/bin/llvm-tli-checker
 rm $MY_INSTALL_DIR/bin/llvm-undname
 rm $MY_INSTALL_DIR/bin/llvm-xray
