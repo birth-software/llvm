@@ -6,11 +6,12 @@ ROOTDIR="$(pwd)"
 export CC=clang
 export CXX=clang++
 
-MY_INSTALL_DIR="$ROOTDIR/out/$LLVM_RELEASE_BASENAME"
+BASE_INSTALL_DIR="$ROOTDIR/out/$CMAKE_BUILD_TYPE"
+MY_INSTALL_DIR="$BASE_INSTALL_DIR/$LLVM_RELEASE_BASENAME"
 mkdir -p $MY_INSTALL_DIR
 
-mkdir -p "$ROOTDIR/out/build-zlib-host"
-cd "$ROOTDIR/out/build-zlib-host"
+mkdir -p "$BASE_INSTALL_DIR/build-zlib-host"
+cd "$BASE_INSTALL_DIR/build-zlib-host"
 cmake "$ROOTDIR/zlib" \
     -G Ninja \
     -DCMAKE_INSTALL_PREFIX="$MY_INSTALL_DIR" \
@@ -18,8 +19,8 @@ cmake "$ROOTDIR/zlib" \
     -DCMAKE_BUILD_TYPE=Release
 cmake --build . --target install
 
-mkdir -p "$ROOTDIR/out/build-zstd-host"
-cd "$ROOTDIR/out/build-zstd-host"
+mkdir -p "$BASE_INSTALL_DIR/build-zstd-host"
+cd "$BASE_INSTALL_DIR/build-zstd-host"
 cmake "$ROOTDIR/zstd" \
     -G Ninja \
     -DCMAKE_INSTALL_PREFIX="$MY_INSTALL_DIR" \
@@ -27,8 +28,8 @@ cmake "$ROOTDIR/zstd" \
     -DCMAKE_BUILD_TYPE=Release
 cmake --build . --target install
 
-mkdir -p "$ROOTDIR/out/build-llvm-host"
-cd "$ROOTDIR/out/build-llvm-host"
+mkdir -p "$BASE_INSTALL_DIR/build-llvm-host"
+cd "$BASE_INSTALL_DIR/build-llvm-host"
 cmake "$ROOTDIR/llvm" \
     -G Ninja \
     -DCMAKE_INSTALL_PREFIX="$MY_INSTALL_DIR" \
@@ -136,13 +137,10 @@ ls -lasR $MY_INSTALL_DIR
 # rm $MY_INSTALL_DIR/bin/verify-uselistorder
 
 DEPLOY_FILENAME="$LLVM_RELEASE_BASENAME.7z"
-DEPLOY_FILE_PATH="$ROOTDIR/out/$DEPLOY_FILENAME"
+DEPLOY_FILE_PATH="$BASE_INSTALL_DIR/$DEPLOY_FILENAME"
 7z a -t7z -m0=lzma2 -mx=9 -mfb=64 -md=32m -ms=on $DEPLOY_FILE_PATH $MY_INSTALL_DIR
-rm -rf $MY_INSTALL_DIR
-cd $ROOTDIR/out
+cd $BASE_INSTALL_DIR
 b2sum $DEPLOY_FILENAME > "$DEPLOY_FILENAME.b2sum"
 cat "$DEPLOY_FILENAME.b2sum"
 cd $ROOTDIR
 split -n 5 -d $DEPLOY_FILE_PATH $DEPLOY_FILE_PATH
-
-echo "DEPLOY_FILE=$DEPLOY_FILE_PATH" >> $GITHUB_OUTPUT
