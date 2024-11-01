@@ -28,12 +28,12 @@ jobs:
     needs: generate-config
     permissions: write-all
     strategy:
+      fail-fast: false
       matrix:
         os: ${{ fromJSON(needs.generate-config.outputs.BIRTH_GITHUB_TARGETS) }}
         CMAKE_BUILD_TYPE: ${{ fromJSON(needs.generate-config.outputs.BIRTH_CMAKE_BUILD_TYPES) }}
     runs-on: ${{ matrix.os }}
     env:
-      INSTALL_DIRECTORY: llvm
       BIRTH_LINUX_IMAGE: ${{ needs.generate-config.outputs.BIRTH_LINUX_IMAGE }}
       BIRTH_WINDOWS_IMAGE: ${{ needs.generate-config.outputs.BIRTH_WINDOWS_IMAGE }}
     steps:
@@ -56,7 +56,8 @@ jobs:
         run: |
           set -ex
           ROOT_DIR=$(pwd)
-          INSTALL_DIRECTORY_PATH=$ROOT_DIR/$INSTALL_DIRECTORY
+          LLVM_BASENAME=llvm-$BIRTH_ARCH-$BIRTH_OS-${{ matrix.CMAKE_BUILD_TYPE }}
+          INSTALL_DIRECTORY_PATH=$ROOT_DIR/$LLVM_BASENAME
           ZSTD_BUILD_DIR=build-zstd
           mkdir -p $ZSTD_BUILD_DIR
           cd $ZSTD_BUILD_DIR
@@ -98,6 +99,9 @@ jobs:
           -DLLVM_ENABLE_TERMINFO=OFF \
           -DLLVM_ENABLE_Z3_SOLVER=OFF \
           -DLLVM_ENABLE_ZSTD=OFF \
+          -DLLVM_INSTALL_TOOLCHAIN_ONLY=ON \
+          -DLLVM_BUILD_UTILS=OFF \
+          -DLLVM_BUILD_TOOLS=OFF \
           -DLLVM_INCLUDE_UTILS=OFF \
           -DLLVM_INCLUDE_TESTS=OFF \
           -DLLVM_INCLUDE_EXAMPLES=OFF \
@@ -110,7 +114,11 @@ jobs:
           cmake --build . --target install
           cd $ROOT_DIR
 
-          LLVM_BASENAME=llvm-$BIRTH_ARCH-$BIRTH_OS-${{ matrix.CMAKE_BUILD_TYPE }}
+          case "$BIRTH_OS" in
+            windows) EXE_EXTENSION=".exe";;
+            *) EXE_EXTENSION="";;
+          esac
+
           7z a -t7z -m0=lzma2 -mx=9 -mfb=64 -md=64m -ms=on $LLVM_BASENAME.7z $INSTALL_DIRECTORY_PATH
           b2sum $LLVM_BASENAME.7z > "$LLVM_BASENAME.7z.b2sum"
           cat "$LLVM_BASENAME.7z.b2sum"
@@ -160,12 +168,12 @@ jobs:
     needs: [generate-config, build_llvm]
     permissions: write-all
     strategy:
+      fail-fast: false
       matrix:
         os: ${{ fromJSON(needs.generate-config.outputs.BIRTH_GITHUB_TARGETS) }}
         CMAKE_BUILD_TYPE: ${{ fromJSON(needs.generate-config.outputs.BIRTH_CMAKE_BUILD_TYPES) }}
     runs-on: ${{ matrix.os }}
     env:
-      INSTALL_DIRECTORY: lld
       BIRTH_LINUX_IMAGE: ${{ needs.generate-config.outputs.BIRTH_LINUX_IMAGE }}
       BIRTH_WINDOWS_IMAGE: ${{ needs.generate-config.outputs.BIRTH_WINDOWS_IMAGE }}
     steps:
@@ -185,17 +193,22 @@ jobs:
       - uses: birth-software/github-setup@v2
       - uses: actions/download-artifact@v4
         with:
-          name: llvm-${{env.BIRTH_ARCH}}-${{env.BIRTH_OS}}-${{ matrix.CMAKE_BUILD_TYPE }}
+          name: llvm-${{env.BIRTH_ARCH}}-${{env.BIRTH_OS}}-${{ matrix.CMAKE_BUILD_TYPE }}.7z
+      - uses: actions/download-artifact@v4
+        with:
+          name: llvm-${{env.BIRTH_ARCH}}-${{env.BIRTH_OS}}-${{ matrix.CMAKE_BUILD_TYPE }}.7z.b2sum
       - name: Build
         shell: bash
         run: |
           set -ex
           ls -lasR
           ROOT_DIR=$(pwd)
-          INSTALL_DIRECTORY_PATH=$ROOT_DIR/$INSTALL_DIRECTORY
-          LLVM_COMPRESSED_BASENAME=llvm-${{env.BIRTH_ARCH}}-${{env.BIRTH_OS}}-${{ matrix.CMAKE_BUILD_TYPE }}.7z
-          7z x "${LLVM_COMPRESSED_BASENAME}.7z"
-          LLVM_PREFIX=$ROOT_DIR/llvm
+          LLD_BASENAME=lld-$BIRTH_ARCH-$BIRTH_OS-${{ matrix.CMAKE_BUILD_TYPE }}
+          INSTALL_DIRECTORY_PATH=$ROOT_DIR/$LLD_BASENAME
+          LLVM_BASENAME=llvm-${{env.BIRTH_ARCH}}-${{env.BIRTH_OS}}-${{ matrix.CMAKE_BUILD_TYPE }}
+          LLVM_COMPRESSED_FILE=$LLVM_BASENAME.7z
+          7z x $LLVM_COMPRESSED_FILE
+          LLVM_PREFIX=$ROOT_DIR/$LLVM_BASENAME
 
           case $BIRTH_OS in
             windows) OPTIONAL_TRIPLE_ARG="-DLLVM_HOST_TRIPLE=$BIRTH_ARCH";;
@@ -229,14 +242,18 @@ jobs:
           -DLLVM_INCLUDE_EXAMPLES=OFF \
           -DLLVM_INCLUDE_BENCHMARKS=OFF \
           -DLLVM_INCLUDE_DOCS=OFF \
+          -DLLVM_INSTALL_TOOLCHAIN_ONLY=ON \
+          -DLLVM_BUILD_UTILS=OFF \
+          -DLLVM_BUILD_TOOLS=OFF \
           -DLLVM_TOOL_LLVM_LTO2_BUILD=OFF \
           -DLLVM_TOOL_LLVM_LTO_BUILD=OFF \
           -DLLVM_TOOL_LTO_BUILD=OFF \
-          -DLLVM_TOOL_REMARKS_SHLIB_BUILD=OFF
+          -DLLVM_TOOL_REMARKS_SHLIB_BUILD=OFF \
+          -DLLD_BUILD_TOOLS=OFF
+
           cmake --build . --target install
           cd $ROOT_DIR
 
-          LLD_BASENAME=lld-$BIRTH_ARCH-$BIRTH_OS-${{ matrix.CMAKE_BUILD_TYPE }}
           7z a -t7z -m0=lzma2 -mx=9 -mfb=64 -md=64m -ms=on $LLD_BASENAME.7z $INSTALL_DIRECTORY_PATH
           b2sum $LLD_BASENAME.7z > "$LLD_BASENAME.7z.b2sum"
           cat "$LLD_BASENAME.7z.b2sum"
