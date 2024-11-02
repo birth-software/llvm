@@ -16,6 +16,7 @@ jobs:
     outputs:
       BIRTH_GITHUB_TARGETS: ${{ steps.generate-config.outputs.BIRTH_GITHUB_TARGETS }}
       BIRTH_CMAKE_BUILD_TYPES: ${{ steps.generate-config.outputs.BIRTH_CMAKE_BUILD_TYPES }}
+      BIRTH_MACOS_IMAGE: ${{ steps.generate-config.outputs.BIRTH_LINUX_IMAGE }}
       BIRTH_LINUX_IMAGE: ${{ steps.generate-config.outputs.BIRTH_LINUX_IMAGE }}
       BIRTH_WINDOWS_IMAGE: ${{ steps.generate-config.outputs.BIRTH_WINDOWS_IMAGE }}
     steps:
@@ -35,6 +36,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     env:
       BIRTH_LINUX_IMAGE: ${{ needs.generate-config.outputs.BIRTH_LINUX_IMAGE }}
+      BIRTH_MACOS_IMAGE: ${{ needs.generate-config.outputs.BIRTH_MACOS_IMAGE }}
       BIRTH_WINDOWS_IMAGE: ${{ needs.generate-config.outputs.BIRTH_WINDOWS_IMAGE }}
     steps:
       - name: Maximize build space
@@ -89,7 +91,7 @@ jobs:
           -DCMAKE_CXX_COMPILER=clang++ \
           -DCMAKE_ASM_COMPILER=clang \
           $OPTIONAL_TRIPLE_ARG \
-          -DLLVM_ENABLE_PROJECTS="lld" \
+          -DLLVM_ENABLE_PROJECTS="lld;clang" \
           -DLLVM_PARALLEL_LINK_JOBS=1 \
           -DLLVM_ENABLE_BINDINGS=OFF \
           -DLLVM_ENABLE_LIBEDIT=OFF \
@@ -102,6 +104,7 @@ jobs:
           -DLLVM_ENABLE_ZSTD=OFF \
           -DLLVM_BUILD_UTILS=OFF \
           -DLLVM_BUILD_TOOLS=OFF \
+          -DLLVM_BUILD_EXAMPLES=OFF \
           -DLLVM_INCLUDE_TOOLS=ON \
           -DLLVM_INCLUDE_UTILS=OFF \
           -DLLVM_INCLUDE_TESTS=OFF \
@@ -112,8 +115,21 @@ jobs:
           -DLLVM_TOOL_LLVM_LTO_BUILD=OFF \
           -DLLVM_TOOL_LTO_BUILD=OFF \
           -DLLVM_TOOL_REMARKS_SHLIB_BUILD=OFF \
-          -DLLD_BUILD_TOOLS=OFF 
-          cmake --build . --target llvm-config llvm-tblgen install
+          -DLLD_BUILD_TOOLS=OFF \
+          -DCLANG_BUILD_TOOLS=OFF \
+          -DCLANG_BUILD_EXAMPLES=OFF \
+          -DCLANG_INCLUDE_DOCS=OFF \
+          -DCLANG_INCLUDE_TESTS=OFF \
+          -DCLANG_TOOL_CLANG_IMPORT_TEST_BUILD=OFF \
+          -DCLANG_TOOL_CLANG_LINKER_WRAPPER_BUILD=OFF \
+          -DCLANG_TOOL_C_INDEX_TEST_BUILD=OFF \
+          -DCLANG_TOOL_ARCMT_TEST_BUILD=OFF \
+          -DCLANG_TOOL_C_ARCMT_TEST_BUILD=OFF \
+          -DCLANG_TOOL_LIBCLANG_BUILD=OFF
+
+          ninja -t targets
+
+          cmake --build . --target llvm-config llvm-tblgen clang-tblgen install
           cd $ROOT_DIR
 
           case "$BIRTH_OS" in
@@ -125,6 +141,7 @@ jobs:
           mkdir -p $INSTALL_DIRECTORY_PATH/bin
           cp build-llvm/bin/llvm-config$EXE_EXTENSION $INSTALL_DIRECTORY_PATH/bin
           cp build-llvm/bin/llvm-tblgen$EXE_EXTENSION $INSTALL_DIRECTORY_PATH/bin
+          cp build-llvm/bin/clang-tblgen$EXE_EXTENSION $INSTALL_DIRECTORY_PATH/bin
 
           7z a -t7z -m0=lzma2 -mx=9 -mfb=64 -md=64m -ms=on $LLVM_BASENAME.7z $INSTALL_DIRECTORY_PATH
           b2sum $LLVM_BASENAME.7z > "$LLVM_BASENAME.7z.b2sum"
