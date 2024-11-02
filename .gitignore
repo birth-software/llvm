@@ -1,3 +1,7 @@
-out/
-out-win/
-out-win-x86/
+/out/
+/out-win/
+/out-win-x86/
+/build*/
+/llvm-*/
+/lld-*/
+/clang-*/
