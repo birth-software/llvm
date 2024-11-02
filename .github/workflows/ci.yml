@@ -5,11 +5,6 @@ on:
   push:
     tags:
       - "**"
-    branches:
-      - main
-  schedule:
-    - cron: "0 0 * * *"
-
 jobs:
   generate-config:
     runs-on: ubuntu-latest
@@ -38,6 +33,8 @@ jobs:
       BIRTH_LINUX_IMAGE: ${{ needs.generate-config.outputs.BIRTH_LINUX_IMAGE }}
       BIRTH_MACOS_IMAGE: ${{ needs.generate-config.outputs.BIRTH_MACOS_IMAGE }}
       BIRTH_WINDOWS_IMAGE: ${{ needs.generate-config.outputs.BIRTH_WINDOWS_IMAGE }}
+      CMAKE_STATIC_LIBRARY_PREFIX: lib
+      CMAKE_STATIC_LIBRARY_SUFFIX: .a
     steps:
       - name: Maximize build space
         if: matrix.os == env.BIRTH_LINUX_IMAGE
@@ -55,27 +52,45 @@ jobs:
       - uses: birth-software/github-setup@v2
       - name: Build
         shell: bash
+        env:
+          CMAKE_BUILD_TYPE: ${{ matrix.CMAKE_BUILD_TYPE }}
         run: |
           set -eux
           ROOT_DIR=$(pwd)
-          LLVM_BASENAME=llvm-$BIRTH_ARCH-$BIRTH_OS-${{ matrix.CMAKE_BUILD_TYPE }}
+          LLVM_BASENAME=llvm-$BIRTH_ARCH-$BIRTH_OS-$CMAKE_BUILD_TYPE
           INSTALL_DIRECTORY_PATH=$ROOT_DIR/$LLVM_BASENAME
           ZSTD_BUILD_DIR=build-zstd
           mkdir -p $ZSTD_BUILD_DIR
           cd $ZSTD_BUILD_DIR
-          cmake $ROOT_DIR/zstd -G Ninja -DCMAKE_C_COMPILER=clang -DCMAKE_CXX_COMPILER=clang++ -DCMAKE_ASM_COMPILER=clang -DCMAKE_INSTALL_PREFIX="$INSTALL_DIRECTORY_PATH" -DCMAKE_BUILD_TYPE=${{ matrix.CMAKE_BUILD_TYPE }}
+          cmake $ROOT_DIR/zstd \
+          -G Ninja \
+          -DCMAKE_STATIC_LIBRARY_PREFIX=$CMAKE_STATIC_LIBRARY_PREFIX \
+          -DCMAKE_STATIC_LIBRARY_SUFFIX=$CMAKE_STATIC_LIBRARY_SUFFIX \
+          -DCMAKE_C_COMPILER=clang \
+          -DCMAKE_CXX_COMPILER=clang++ \
+          -DCMAKE_ASM_COMPILER=clang \
+          -DCMAKE_INSTALL_PREFIX="$INSTALL_DIRECTORY_PATH" \
+          -DCMAKE_BUILD_TYPE=$CMAKE_BUILD_TYPE
           cmake --build . --target install
           cd $ROOT_DIR
 
           ZLIB_BUILD_DIR=build-zlib
           mkdir -p $ZLIB_BUILD_DIR
           cd $ZLIB_BUILD_DIR
-          cmake $ROOT_DIR/zlib -G Ninja -DCMAKE_C_COMPILER=clang -DCMAKE_CXX_COMPILER=clang++ -DCMAKE_ASM_COMPILER=clang -DCMAKE_INSTALL_PREFIX="$INSTALL_DIRECTORY_PATH" -DCMAKE_BUILD_TYPE=${{ matrix.CMAKE_BUILD_TYPE }}
+          cmake $ROOT_DIR/zlib \
+          -G Ninja \
+          -DCMAKE_STATIC_LIBRARY_PREFIX=$CMAKE_STATIC_LIBRARY_PREFIX \
+          -DCMAKE_STATIC_LIBRARY_SUFFIX=$CMAKE_STATIC_LIBRARY_SUFFIX \
+          -DCMAKE_C_COMPILER=clang \
+          -DCMAKE_CXX_COMPILER=clang++ \
+          -DCMAKE_ASM_COMPILER=clang \
+          -DCMAKE_INSTALL_PREFIX="$INSTALL_DIRECTORY_PATH" \
+          -DCMAKE_BUILD_TYPE=$CMAKE_BUILD_TYPE
           cmake --build . --target install
           cd $ROOT_DIR
 
           case $BIRTH_OS in
-            windows) OPTIONAL_TRIPLE_ARG="-DLLVM_HOST_TRIPLE=$BIRTH_ARCH";;
+            windows) OPTIONAL_TRIPLE_ARG="-DLLVM_HOST_TRIPLE=$BIRTH_ARCH-pc-windows-msvc";;
             *) OPTIONAL_TRIPLE_ARG="";;
           esac
 
@@ -84,9 +99,11 @@ jobs:
           cd $LLVM_BUILD_DIR
           cmake $ROOT_DIR/llvm \
           -G Ninja \
+          -DCMAKE_STATIC_LIBRARY_PREFIX=$CMAKE_STATIC_LIBRARY_PREFIX \
+          -DCMAKE_STATIC_LIBRARY_SUFFIX=$CMAKE_STATIC_LIBRARY_SUFFIX \
           -DCMAKE_INSTALL_PREFIX="$INSTALL_DIRECTORY_PATH" \
           -DCMAKE_PREFIX_PATH="$INSTALL_DIRECTORY_PATH" \
-          -DCMAKE_BUILD_TYPE=${{ matrix.CMAKE_BUILD_TYPE }} \
+          -DCMAKE_BUILD_TYPE=$CMAKE_BUILD_TYPE \
           -DCMAKE_C_COMPILER=clang \
           -DCMAKE_CXX_COMPILER=clang++ \
           -DCMAKE_ASM_COMPILER=clang \
