@@ -93,6 +93,10 @@ jobs:
             windows) OPTIONAL_TRIPLE_ARG="-DLLVM_HOST_TRIPLE=$BIRTH_ARCH-pc-windows-msvc";;
             *) OPTIONAL_TRIPLE_ARG="";;
           esac
+          case $BIRTH_OS in
+            linux) USE_MOLD_OPT_ARG=-DCMAKE_EXE_LINKER_FLAGS="-fuse-ld=mold" ;;
+            *) USE_MOLD_OPT_ARG="" ;;
+          esac
 
           LLVM_BUILD_DIR=build-llvm
           mkdir -p $LLVM_BUILD_DIR
@@ -107,10 +111,14 @@ jobs:
           -DCMAKE_C_COMPILER=clang \
           -DCMAKE_CXX_COMPILER=clang++ \
           -DCMAKE_ASM_COMPILER=clang \
+          $USE_MOLD_OPT_ARG \
           $OPTIONAL_TRIPLE_ARG \
           -DLLVM_ENABLE_PROJECTS="lld;clang" \
           -DLLVM_PARALLEL_LINK_JOBS=1 \
           -DLLVM_ENABLE_BINDINGS=OFF \
+          -DLLVM_ENABLE_BACKTRACES=OFF \
+          -DLLVM_ENABLE_BINDINGS=OFF \
+          -DLLVM_ENABLE_CRASH_OVERRIDES=OFF \
           -DLLVM_ENABLE_LIBEDIT=OFF \
           -DLLVM_ENABLE_LIBPFM=OFF \
           -DLLVM_ENABLE_LIBXML2=OFF \
@@ -118,7 +126,9 @@ jobs:
           -DLLVM_ENABLE_PLUGINS=OFF \
           -DLLVM_ENABLE_TERMINFO=OFF \
           -DLLVM_ENABLE_Z3_SOLVER=OFF \
-          -DLLVM_ENABLE_ZSTD=OFF \
+          -DLLVM_ENABLE_ZLIB=ON \
+          -DLLVM_ENABLE_ZSTD=ON \
+          -DLLVM_USE_STATIC_ZSTD=ON \
           -DLLVM_BUILD_UTILS=OFF \
           -DLLVM_BUILD_TOOLS=OFF \
           -DLLVM_BUILD_EXAMPLES=OFF \
@@ -133,6 +143,8 @@ jobs:
           -DLLVM_TOOL_LTO_BUILD=OFF \
           -DLLVM_TOOL_REMARKS_SHLIB_BUILD=OFF \
           -DLLD_BUILD_TOOLS=OFF \
+          -DLIBCLANG_BUILD_STATIC=ON \
+          -DCLANG_ENABLE_ARCMT=ON \
           -DCLANG_BUILD_TOOLS=OFF \
           -DCLANG_BUILD_EXAMPLES=OFF \
           -DCLANG_INCLUDE_DOCS=OFF \
