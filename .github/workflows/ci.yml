@@ -12,6 +12,7 @@ jobs:
       BIRTH_GITHUB_TARGETS: ${{ steps.generate-config.outputs.BIRTH_GITHUB_TARGETS }}
       BIRTH_CMAKE_BUILD_TYPES: ${{ steps.generate-config.outputs.BIRTH_CMAKE_BUILD_TYPES }}
       BIRTH_MACOS_IMAGE: ${{ steps.generate-config.outputs.BIRTH_LINUX_IMAGE }}
+      BIRTH_ORACLE_LINUX_IMAGE: ${{ steps.generate-config.outputs.BIRTH_ORACLE_LINUX_IMAGE }}
       BIRTH_LINUX_IMAGE: ${{ steps.generate-config.outputs.BIRTH_LINUX_IMAGE }}
       BIRTH_WINDOWS_IMAGE: ${{ steps.generate-config.outputs.BIRTH_WINDOWS_IMAGE }}
     steps:
@@ -19,7 +20,7 @@ jobs:
         uses: actions/checkout@v4
       - name: Generate config
         id: generate-config
-        uses: birth-software/github-config@v2
+        uses: birth-software/github-config@v3
   build_llvm:
     needs: generate-config
     permissions: write-all
@@ -30,7 +31,7 @@ jobs:
         CMAKE_BUILD_TYPE: ${{ fromJSON(needs.generate-config.outputs.BIRTH_CMAKE_BUILD_TYPES) }}
     runs-on: ${{ matrix.os }}
     env:
-      BIRTH_LINUX_IMAGE: ${{ needs.generate-config.outputs.BIRTH_LINUX_IMAGE }}
+      BIRTH_ORACLE_LINUX_IMAGE: ${{ needs.generate-config.outputs.BIRTH_ORACLE_LINUX_IMAGE }}
       BIRTH_MACOS_IMAGE: ${{ needs.generate-config.outputs.BIRTH_MACOS_IMAGE }}
       BIRTH_WINDOWS_IMAGE: ${{ needs.generate-config.outputs.BIRTH_WINDOWS_IMAGE }}
       CMAKE_STATIC_LIBRARY_PREFIX: lib
@@ -49,7 +50,7 @@ jobs:
           remove-cached-tools: 'true'
           remove-swapfile: 'true'
       - uses: actions/checkout@v4
-      - uses: birth-software/github-setup@v2
+      - uses: birth-software/github-setup@v3
       - name: Build
         shell: bash
         env:
