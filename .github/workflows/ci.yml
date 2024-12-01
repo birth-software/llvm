@@ -32,6 +32,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     env:
       BIRTH_ORACLE_LINUX_IMAGE: ${{ needs.generate-config.outputs.BIRTH_ORACLE_LINUX_IMAGE }}
+      BIRTH_LINUX_IMAGE: ${{ needs.generate-config.outputs.BIRTH_LINUX_IMAGE }}
       BIRTH_MACOS_IMAGE: ${{ needs.generate-config.outputs.BIRTH_MACOS_IMAGE }}
       BIRTH_WINDOWS_IMAGE: ${{ needs.generate-config.outputs.BIRTH_WINDOWS_IMAGE }}
       CMAKE_STATIC_LIBRARY_PREFIX: lib
