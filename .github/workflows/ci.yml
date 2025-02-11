@@ -15,6 +15,7 @@ jobs:
       BIRTH_LINUX_AARCH64: ${{ steps.generate-config.outputs.BIRTH_LINUX_AARCH64 }}
       BIRTH_LINUX_X86_64: ${{ steps.generate-config.outputs.BIRTH_LINUX_X86_64 }}
       BIRTH_WINDOWS_X86_64: ${{ steps.generate-config.outputs.BIRTH_WINDOWS_X86_64 }}
+      BIRTH_LINKAGE_MODES: ${{ steps.generate-config.outputs.BIRTH_LINKAGE_MODES }}
     steps:
       - name: Check out repository
         uses: actions/checkout@v4
@@ -25,10 +26,10 @@ jobs:
     needs: generate-config
     permissions: write-all
     strategy:
-      fail-fast: false
       matrix:
         os: ${{ fromJSON(needs.generate-config.outputs.BIRTH_GITHUB_TARGETS) }}
         CMAKE_BUILD_TYPE: ${{ fromJSON(needs.generate-config.outputs.BIRTH_CMAKE_BUILD_TYPES) }}
+        BIRTH_LINKAGE_MODE: ${{ fromJSON(needs.generate-config.outputs.BIRTH_LINKAGE_MODES) }}
     runs-on: ${{ matrix.os }}
     env:
       BIRTH_MACOS_AARCH64: ${{ needs.generate-config.outputs.BIRTH_MACOS_AARCH64 }}
@@ -52,6 +53,8 @@ jobs:
           remove-swapfile: 'true'
       - uses: actions/checkout@v4
       - uses: birth-software/github-setup@v5
+        env:
+          BIRTH_LINKAGE_MODE: ${{ matrix.BIRTH_LINKAGE_MODE }}
       - name: Build
         shell: bash
         env:
