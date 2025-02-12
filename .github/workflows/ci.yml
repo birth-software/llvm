@@ -40,7 +40,7 @@ jobs:
     steps:
       - name: Maximize build space
         if: matrix.os == env.BIRTH_LINUX_X86_64 || matrix.os == env.BIRTH_LINUX_AARCH64
-        uses: davidgmbb/remove-unwanted-software@master
+        uses: AdityaGarg8/remove-unwanted-software@v5
         with:
           remove-android: 'true'
           remove-dotnet: 'true'
