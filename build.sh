@@ -55,7 +55,7 @@ cmake $ROOT_DIR/llvm \
     -DCMAKE_CXX_COMPILER=clang++ \
     -DCMAKE_ASM_COMPILER=clang \
     $OPTIONAL_TRIPLE_ARG \
-    -DLLVM_ENABLE_PROJECTS="lld;clang" \
+    -DLLVM_ENABLE_PROJECTS="lld;clang;mlir" \
     -DLLVM_PARALLEL_LINK_JOBS=1 \
     -DLLVM_ENABLE_BINDINGS=OFF \
     -DLLVM_ENABLE_LIBEDIT=OFF \
@@ -92,7 +92,7 @@ cmake $ROOT_DIR/llvm \
 
 ninja -t targets
 
-cmake --build . --target llvm-config llvm-tblgen clang-tblgen install
+cmake --build . --target llvm-config llvm-tblgen clang-tblgen mlir-tblgen install
 cd $ROOT_DIR
 
 case "$BIRTH_OS" in
@@ -105,6 +105,7 @@ mkdir -p $INSTALL_DIRECTORY_PATH/bin
 cp build-llvm/bin/llvm-config$EXE_EXTENSION $INSTALL_DIRECTORY_PATH/bin
 cp build-llvm/bin/llvm-tblgen$EXE_EXTENSION $INSTALL_DIRECTORY_PATH/bin
 cp build-llvm/bin/clang-tblgen$EXE_EXTENSION $INSTALL_DIRECTORY_PATH/bin
+cp build-llvm/bin/mlir-tblgen$EXE_EXTENSION $INSTALL_DIRECTORY_PATH/bin
 
 7z a -t7z -m0=lzma2 -mx=9 -mfb=64 -md=64m -ms=on $LLVM_BASENAME.7z $INSTALL_DIRECTORY_PATH
 b2sum $LLVM_BASENAME.7z > "$LLVM_BASENAME.7z.b2sum"
