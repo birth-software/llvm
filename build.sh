@@ -3,10 +3,13 @@
 set -eux
 
 ROOT_DIR=$(pwd)
-LLVM_BASENAME=llvm-$BIRTH_ARCH-$BIRTH_OS-$CMAKE_BUILD_TYPE
-INSTALL_DIRECTORY_PATH=$ROOT_DIR/$LLVM_BASENAME
+LLVM_SOURCE_BASENAME=llvm_$LLVM_VERSION
+LLVM_BASENAME="${LLVM_SOURCE_BASENAME}_$BIRTH_ARCH-$BIRTH_OS-$CMAKE_BUILD_TYPE"
+INSTALL_DIRECTORY_PATH=$ROOT_DIR/install/$LLVM_BASENAME
+CMAKE_STATIC_LIBRARY_PREFIX=lib
+CMAKE_STATIC_LIBRARY_SUFFIX=.a
 
-ZSTD_BUILD_DIR=build-zstd
+ZSTD_BUILD_DIR=$ROOT_DIR/build/zstd
 mkdir -p $ZSTD_BUILD_DIR
 cd $ZSTD_BUILD_DIR
 cmake $ROOT_DIR/zstd \
@@ -21,7 +24,7 @@ cmake $ROOT_DIR/zstd \
 cmake --build . --target install
 cd $ROOT_DIR
 
-ZLIB_BUILD_DIR=build-zlib
+ZLIB_BUILD_DIR=$ROOT_DIR/build/zlib
 mkdir -p $ZLIB_BUILD_DIR
 cd $ZLIB_BUILD_DIR
 cmake $ROOT_DIR/zlib \
@@ -51,10 +54,16 @@ else
     BIRTH_CMAKE_TARGETS="llvm-config llvm-tblgen"
 fi
 
-LLVM_BUILD_DIR=build-llvm
+LLVM_BUILD_DIR=$ROOT_DIR/build/$LLVM_BASENAME
 mkdir -p $LLVM_BUILD_DIR
+
+LLVM_SOURCE_DIR="$ROOT_DIR/source/$LLVM_SOURCE_BASENAME"
+if [ ! -d "$LLVM_SOURCE_DIR" ]; then
+    git clone --depth 1 --single-branch --branch llvmorg-$LLVM_VERSION https://github.com/llvm/llvm-project.git $LLVM_SOURCE_DIR
+fi
+
 cd $LLVM_BUILD_DIR
-cmake $ROOT_DIR/llvm \
+cmake $LLVM_SOURCE_DIR/llvm \
     -G Ninja \
     -DCMAKE_STATIC_LIBRARY_PREFIX=$CMAKE_STATIC_LIBRARY_PREFIX \
     -DCMAKE_STATIC_LIBRARY_SUFFIX=$CMAKE_STATIC_LIBRARY_SUFFIX \
@@ -68,6 +77,7 @@ cmake $ROOT_DIR/llvm \
     $BIRTH_LLVM_ENABLE_PROJECTS_FLAG \
     -DLLVM_TARGETS_TO_BUILD="X86" \
     -DLLVM_PARALLEL_LINK_JOBS=1 \
+    -DLLVM_OPTIMIZED_TABLEGEN=ON \
     -DLLVM_ENABLE_BINDINGS=OFF \
     -DLLVM_ENABLE_LIBEDIT=OFF \
     -DLLVM_ENABLE_LIBPFM=OFF \
@@ -102,11 +112,11 @@ esac
 
 # Install manually just these couple exes
 mkdir -p $INSTALL_DIRECTORY_PATH/bin
-cp build-llvm/bin/llvm-config$EXE_EXTENSION $INSTALL_DIRECTORY_PATH/bin
-cp build-llvm/bin/llvm-tblgen$EXE_EXTENSION $INSTALL_DIRECTORY_PATH/bin
+cp $LLVM_BUILD_DIR/bin/llvm-config$EXE_EXTENSION $INSTALL_DIRECTORY_PATH/bin
+cp $LLVM_BUILD_DIR/bin/llvm-tblgen$EXE_EXTENSION $INSTALL_DIRECTORY_PATH/bin
 if [[ "$BIRTH_ENABLE_CLANG" == "true" ]]; then
-    cp build-llvm/bin/clang$EXE_EXTENSION $INSTALL_DIRECTORY_PATH/bin
-    cp build-llvm/bin/clang-tblgen$EXE_EXTENSION $INSTALL_DIRECTORY_PATH/bin
+    cp $LLVM_BUILD_DIR/bin/clang$EXE_EXTENSION $INSTALL_DIRECTORY_PATH/bin
+    cp $LLVM_BUILD_DIR/bin/clang-tblgen$EXE_EXTENSION $INSTALL_DIRECTORY_PATH/bin
 fi
 
 7z a -t7z -m0=lzma2 -mx=9 -mfb=64 -md=64m -ms=on $LLVM_BASENAME.7z $INSTALL_DIRECTORY_PATH
