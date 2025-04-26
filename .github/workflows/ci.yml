@@ -20,7 +20,9 @@ jobs:
         uses: actions/checkout@v4
       - name: Generate config
         id: generate-config
-        uses: birth-software/github-config@v7
+        uses: birth-software/github-config@v8
+        with:
+          include_windows_aarch64: true
   build_llvm:
     needs: generate-config
     permissions: write-all
@@ -28,15 +30,8 @@ jobs:
       fail-fast: false
       matrix:
         os: ${{ fromJSON(needs.generate-config.outputs.BIRTH_GITHUB_TARGETS) }}
-        CMAKE_BUILD_TYPE: ${{ fromJSON(needs.generate-config.outputs.BIRTH_CMAKE_BUILD_TYPES) }}
+        CMAKE_BUILD_TYPE: [ Release ]
         BIRTH_LLVM_ENABLE_ASSERTIONS: [ ON, OFF ]
-        exclude:
-          - BIRTH_LLVM_ENABLE_ASSERTIONS: ON
-            CMAKE_BUILD_TYPE: RelWithDebInfo
-          - BIRTH_LLVM_ENABLE_ASSERTIONS: ON
-            CMAKE_BUILD_TYPE: MinSizeRel
-          - BIRTH_LLVM_ENABLE_ASSERTIONS: OFF
-            CMAKE_BUILD_TYPE: Debug
     runs-on: ${{ matrix.os }}
     env:
       BIRTH_MACOS_AARCH64: ${{ needs.generate-config.outputs.BIRTH_MACOS_AARCH64 }}
@@ -49,7 +44,7 @@ jobs:
     steps:
       - name: Maximize build space
         if: matrix.os == env.BIRTH_LINUX_X86_64 || matrix.os == env.BIRTH_LINUX_AARCH64
-        uses: AdityaGarg8/remove-unwanted-software@v5
+        uses: davidgmbb/remove-unwanted-software@master
         with:
           remove-android: 'true'
           remove-dotnet: 'true'
@@ -60,7 +55,7 @@ jobs:
           remove-cached-tools: 'true'
           remove-swapfile: 'true'
       - uses: actions/checkout@v4
-      - uses: birth-software/github-setup@v6
+      - uses: birth-software/github-setup@v8
       - name: Build
         shell: bash
         env:
