@@ -9,7 +9,7 @@ INSTALL_DIRECTORY_PATH=$ROOT_DIR/install/$LLVM_BASENAME
 CMAKE_STATIC_LIBRARY_PREFIX=lib
 CMAKE_STATIC_LIBRARY_SUFFIX=.a
 
-ZSTD_BUILD_DIR=$ROOT_DIR/build/zstd
+ZSTD_BUILD_DIR=$ROOT_DIR/build/zstd-$LLVM_BASENAME
 mkdir -p $ZSTD_BUILD_DIR
 cd $ZSTD_BUILD_DIR
 cmake $ROOT_DIR/zstd \
@@ -24,7 +24,7 @@ cmake $ROOT_DIR/zstd \
 cmake --build . --target install
 cd $ROOT_DIR
 
-ZLIB_BUILD_DIR=$ROOT_DIR/build/zlib
+ZLIB_BUILD_DIR=$ROOT_DIR/build/zlib-$LLVM_BASENAME
 mkdir -p $ZLIB_BUILD_DIR
 cd $ZLIB_BUILD_DIR
 cmake $ROOT_DIR/zlib \
