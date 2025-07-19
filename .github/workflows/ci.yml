@@ -20,7 +20,7 @@ jobs:
         uses: actions/checkout@v4
       - name: Generate config
         id: generate-config
-        uses: birth-software/github-config@v7
+        uses: birth-software/github-config@v8
   build_llvm:
     needs: generate-config
     permissions: write-all
@@ -60,7 +60,7 @@ jobs:
           remove-cached-tools: 'true'
           remove-swapfile: 'true'
       - uses: actions/checkout@v4
-      - uses: birth-software/github-setup@v6
+      - uses: birth-software/github-setup@v7
       - name: Build
         shell: bash
         env:
