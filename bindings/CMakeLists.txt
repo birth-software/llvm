@@ -12,7 +12,7 @@ project(bb)
 find_package(LLVM REQUIRED CONFIG)
 find_package(LLD REQUIRED CONFIG)
 
-add_library(llvm_bindings llvm.cpp)
+add_library(llvm_bindings STATIC llvm.cpp)
 
 find_library(LLD_COMMON NAMES liblldCommon.dylib lldCommon.lib lldCommon.a liblldCommon.dll.a liblldCommon.a PATHS ${LLVM_LIBRARY_DIRS} NO_DEFAULT_PATH)
 find_library(LLD_COFF NAMES liblldCOFF.dylib lldCOFF.lib lldCOFF.a liblldCOFF.dll.a liblldCOFF.a PATHS ${LLVM_LIBRARY_DIRS} NO_DEFAULT_PATH)
