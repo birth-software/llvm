@@ -11,9 +11,12 @@ case $BIRTH_OS in
 esac
 
 BASENAME_ASSERTION=""
-if [[ -z "${BIRTH_LLVM_ENABLE_ASSERTIONS:-}" ]]; then
-    if [[ "${CMAKE_BUILD_TYPE}" != "Debug" ]]; then
-        BASENAME_ASSERTION="-assertions"
+
+if [[ -n "${BIRTH_LLVM_ENABLE_ASSERTIONS:-}" ]]; then
+    if [[ "$BIRTH_LLVM_ENABLE_ASSERTIONS" == "ON" ]]; then
+        if [[ "${CMAKE_BUILD_TYPE}" != "Debug" ]]; then
+            BASENAME_ASSERTION="-assertions"
+        fi
     fi
 else
     BIRTH_LLVM_ENABLE_ASSERTIONS=$DEFAULT_ASSERTION_FLAG
