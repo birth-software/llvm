@@ -170,10 +170,11 @@ cmake $LLVM_BINDINGS_SOURCE_DIR \
 cmake --build .
 
 if [[ "$BIRTH_OS" == "windows" ]]; then
-    cp $LLVM_BINDINGS_BUILD_DIR/llvm_bindings.lib $LLVM_BINDINGS_BUILD_DIR/lib
+    cp $LLVM_BINDINGS_BUILD_DIR/lld_bindings.lib $INSTALL_DIRECTORY_PATH/lib
 else
-    cp $LLVM_BINDINGS_BUILD_DIR/libllvm_bindings.a $INSTALL_DIRECTORY_PATH/lib
+    cp $LLVM_BINDINGS_BUILD_DIR/liblld_bindings.a $INSTALL_DIRECTORY_PATH/lib
 fi
+cp $ROOT_DIR/bindings/include/* $INSTALL_DIRECTORY_PATH/include
 
 cd $ROOT_DIR
 

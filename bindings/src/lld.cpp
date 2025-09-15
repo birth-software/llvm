@@ -1,33 +1,9 @@
+#include <lld_bindings.h>
+
 #include "lld/Common/CommonLinkerContext.h"
 
-#define EXPORT extern "C"
+#define BB_EXPORT extern "C"
 #define fn static
-
-typedef uint8_t u8;
-typedef uint64_t u64;
-struct String
-{
-    u8* pointer;
-    u64 length;
-};
-
-struct LLDResult
-{
-    String stdout_string;
-    String stderr_string;
-    bool success;
-};
-
-using AllocationFn = u8* (void* context, u64 size, u64 alignment);
-
-#define lld_api_args() char* const* argument_pointer, u64 argument_count, bool exit_early, bool disable_output, AllocationFn* allocate_fn, void* context
-#define lld_api_function_decl(link_name) LLDResult lld_ ## link_name ## _link(lld_api_args())
-
-extern "C" lld_api_function_decl(coff);
-extern "C" lld_api_function_decl(elf);
-extern "C" lld_api_function_decl(mingw);
-extern "C" lld_api_function_decl(macho);
-extern "C" lld_api_function_decl(wasm);
 
 #define lld_api_function_signature(name) bool name(llvm::ArrayRef<const char *> args, llvm::raw_ostream &stdoutOS, llvm::raw_ostream &stderrOS, bool exitEarly, bool disableOutput)
 
@@ -86,7 +62,7 @@ fn LLDResult lld_api_generic(lld_api_args(), LinkerFunction linker_function)
 }
 
 #define lld_api_function_impl(link_name) \
-EXPORT lld_api_function_decl(link_name)\
+BB_EXPORT lld_api_function_decl(link_name)\
 {\
     return lld_api_generic(argument_pointer, argument_count, exit_early, disable_output, allocate_fn, context, lld::link_name::link);\
 }
