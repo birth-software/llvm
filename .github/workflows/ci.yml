@@ -61,7 +61,7 @@ jobs:
         env:
           CMAKE_BUILD_TYPE: ${{ matrix.CMAKE_BUILD_TYPE }}
           BIRTH_ENABLE_CLANG: false
-          LLVM_VERSION: 21.1.0
+          LLVM_VERSION: 21.1.1
         run: ./build.sh
       - name: Upload LLVM artifact (7z)
         uses: actions/upload-artifact@v4
