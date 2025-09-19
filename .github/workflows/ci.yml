@@ -5,6 +5,11 @@ on:
   push:
     tags:
       - "**"
+env:
+  LLVM_VERSION: 21.1.1
+  CMAKE_STATIC_LIBRARY_PREFIX: lib
+  CMAKE_STATIC_LIBRARY_SUFFIX: .a
+
 jobs:
   generate-config:
     runs-on: ubuntu-latest
@@ -20,7 +25,7 @@ jobs:
         uses: actions/checkout@v4
       - name: Generate config
         id: generate-config
-        uses: birth-software/github-config@v8
+        uses: birth-software/github-config@v9
         with:
           include_windows_aarch64: true
   build_llvm:
@@ -38,8 +43,6 @@ jobs:
       BIRTH_LINUX_AARCH64: ${{ needs.generate-config.outputs.BIRTH_LINUX_AARCH64 }}
       BIRTH_LINUX_X86_64: ${{ needs.generate-config.outputs.BIRTH_LINUX_X86_64 }}
       BIRTH_WINDOWS_X86_64: ${{ needs.generate-config.outputs.BIRTH_WINDOWS_X86_64 }}
-      CMAKE_STATIC_LIBRARY_PREFIX: lib
-      CMAKE_STATIC_LIBRARY_SUFFIX: .a
       BIRTH_LLVM_ENABLE_ASSERTIONS: ${{ matrix.BIRTH_LLVM_ENABLE_ASSERTIONS }}
     steps:
       - name: Maximize build space
@@ -55,14 +58,14 @@ jobs:
           remove-cached-tools: 'true'
           remove-swapfile: 'true'
       - uses: actions/checkout@v4
-      - uses: birth-software/github-setup@v8
+      - uses: birth-software/github-setup@v9
       - name: Build
         shell: bash
         env:
           CMAKE_BUILD_TYPE: ${{ matrix.CMAKE_BUILD_TYPE }}
-          BIRTH_ENABLE_CLANG: false
-          LLVM_VERSION: 21.1.1
-        run: ./build.sh
+          BIRTH_ENABLE_CLANG: true
+        run: |
+          ./build.sh
       - name: Upload LLVM artifact (7z)
         uses: actions/upload-artifact@v4
         with:
@@ -75,18 +78,6 @@ jobs:
           compression-level: 9
           overwrite: true
           if-no-files-found: 'error'
-      - name: Upload LLVM artifact (b2sum)
-        uses: actions/upload-artifact@v4
-        with:
-          # Name of the artifact to upload.
-          # Optional. Default is 'artifact'
-          name: ${{env.LLVM_BASENAME}}.7z.b2sum
-          # A file, directory or wildcard pattern that describes what to upload
-          # Required.
-          path: ${{env.LLVM_ASSET_BASE_PATH}}.7z.b2sum
-          compression-level: 9
-          overwrite: true
-          if-no-files-found: 'error'
       - name: Release
         uses: softprops/action-gh-release@v2
         if: startsWith(github.ref, 'refs/tags/')
@@ -95,4 +86,34 @@ jobs:
         with:
           files: |
             ${{env.LLVM_BASENAME}}.7z
-            ${{env.LLVM_BASENAME}}.7z.b2sum
+  fix_llvm_windows_assertions:
+    needs: build_llvm
+    permissions: write-all
+    strategy:
+      fail-fast: false
+      matrix:
+        BIRTH_ARCH: [ x86_64, aarch64 ]
+        os: [ ubuntu-24.04-arm ]
+    env:
+      BIRTH_OS: windows
+      CMAKE_BUILD_TYPE: Release
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+        if: startsWith(github.ref, 'refs/tags/')
+      - name: Fix
+        if: startsWith(github.ref, 'refs/tags/')
+        shell: bash
+        env:
+          BIRTH_ARCH: ${{ matrix.BIRTH_ARCH }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          ./fix_llvm_windows_assertions.sh
+      - name: Release
+        uses: softprops/action-gh-release@v2
+        if: startsWith(github.ref, 'refs/tags/')
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          files: |
+            ${{env.LLVM_BASENAME}}.7z
