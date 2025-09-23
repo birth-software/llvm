@@ -2,7 +2,9 @@
 
 #include "lld/Common/CommonLinkerContext.h"
 
+#ifndef BB_EXPORT
 #define BB_EXPORT extern "C"
+#endif
 #define fn static
 
 #define lld_api_function_signature(name) bool name(llvm::ArrayRef<const char *> args, llvm::raw_ostream &stdoutOS, llvm::raw_ostream &stderrOS, bool exitEarly, bool disableOutput)
@@ -37,12 +39,16 @@ fn LLDResult lld_api_generic(lld_api_args(), LinkerFunction linker_function)
 
     result.success = linker_function(arguments, stdout_stream, stderr_stream, exit_early, disable_output);
 
+    static_assert(sizeof(char) == sizeof(u8));
+    static_assert(alignof(char) == alignof(u8));
+
     auto stdout_length = stdout_string.length();
     if (stdout_length)
     {
         auto* stdout_pointer = allocate_fn(context, stdout_length + 1, 1);
         memcpy(stdout_pointer, stdout_string.data(), stdout_length);
-        result.stdout_string = { stdout_pointer, stdout_length };
+        result.stdout_string.pointer = (char*)stdout_pointer;
+        result.stdout_string.length = stdout_length;
         stdout_pointer[stdout_length] = 0;
     }
 
@@ -51,7 +57,8 @@ fn LLDResult lld_api_generic(lld_api_args(), LinkerFunction linker_function)
     {
         auto* stderr_pointer = allocate_fn(context, stderr_length + 1, 1);
         memcpy(stderr_pointer, stderr_string.data(), stderr_length);
-        result.stderr_string = { stderr_pointer, stderr_length };
+        result.stderr_string.pointer = (char*)stderr_pointer;
+        result.stderr_string.length = stderr_length;
         stderr_pointer[stderr_length] = 0;
     }
 

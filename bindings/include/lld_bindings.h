@@ -16,16 +16,19 @@ typedef uint64_t u64;
 #endif
 #endif
 
-typedef struct String
+#ifndef BB_STRING
+#define BB_STRING
+typedef struct str
 {
-    u8* pointer;
+    char* pointer;
     u64 length;
-} String;
+} str;
+#endif
 
 typedef struct LLDResult
 {
-    String stdout_string;
-    String stderr_string;
+    str stdout_string;
+    str stderr_string;
     bool success;
 } LLDResult;
 
